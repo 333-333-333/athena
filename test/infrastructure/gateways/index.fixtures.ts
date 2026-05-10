@@ -1,1 +1,1 @@
-export const indexFixtures = {};
+export const infrastructureGatewaysIndexFixtures = {};

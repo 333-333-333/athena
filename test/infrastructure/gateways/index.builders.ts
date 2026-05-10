@@ -1,1 +1,1 @@
-export const indexBuilders = {};
+export const buildInfrastructureGatewaysIndex = () => ({});
