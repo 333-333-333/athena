@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
   InMemoryPersistenceProvider,
-  Neo4jPersistenceProvider,
+  SqlitePersistenceProvider,
   selectPersistenceProvider,
 } from "../../src/infrastructure/persistence-provider";
 import { buildPersistenceConfig } from "./persistence-provider.builders";
@@ -16,12 +16,12 @@ describe("persistence-provider", () => {
     ).toBeInstanceOf(InMemoryPersistenceProvider);
   });
 
-  it("selects neo4j provider", () => {
+  it("selects sqlite provider", () => {
     expect(
       selectPersistenceProvider(
-        persistenceProviderFixtures.neo4jConfig.persistence.kind,
+        persistenceProviderFixtures.sqliteConfig.persistence.kind,
       ),
-    ).toBeInstanceOf(Neo4jPersistenceProvider);
+    ).toBeInstanceOf(SqlitePersistenceProvider);
   });
 
   it("memory provider returns working repository", async () => {

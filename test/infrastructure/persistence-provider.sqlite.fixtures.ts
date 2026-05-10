@@ -1,8 +1,8 @@
 import type { AthenaConfig } from "../../src/infrastructure/config/athena-config";
 
-export const persistenceProviderNeo4jFixtures = {
+export const persistenceProviderSqliteFixtures = {
   config: {
     env: "production",
-    persistence: { kind: "neo4j" },
+    persistence: { kind: "sqlite", sqlitePath: ".athena/athena.sqlite" },
   } satisfies AthenaConfig,
 } as const;

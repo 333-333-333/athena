@@ -4,8 +4,8 @@ export const persistenceProviderFixtures = {
     env: "test",
     persistence: { kind: "memory" },
   } satisfies AthenaConfig,
-  neo4jConfig: {
+  sqliteConfig: {
     env: "production",
-    persistence: { kind: "neo4j" },
+    persistence: { kind: "sqlite" },
   } satisfies AthenaConfig,
 } as const;

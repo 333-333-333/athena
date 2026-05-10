@@ -1,5 +1,5 @@
 import { athenaConfigFixtures } from "./infrastructure/config/athena-config.fixtures";
 export const compositionRootFixtures = {
   testMemoryConfig: athenaConfigFixtures.testMemory,
-  productionNeo4jConfig: athenaConfigFixtures.productionNeo4j,
+  productionSqliteConfig: athenaConfigFixtures.productionSqlite,
 } as const;

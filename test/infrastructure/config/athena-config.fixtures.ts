@@ -4,8 +4,8 @@ export const athenaConfigFixtures = {
     env: "test",
     persistence: { kind: "memory" },
   } satisfies AthenaConfig,
-  productionNeo4j: {
+  productionSqlite: {
     env: "production",
-    persistence: { kind: "neo4j" },
+    persistence: { kind: "sqlite", sqlitePath: ".athena/athena.sqlite" },
   } satisfies AthenaConfig,
 } as const;

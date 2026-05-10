@@ -5,5 +5,6 @@ export const buildAthenaConfig = (
   env: overrides.env ?? "test",
   persistence: {
     kind: overrides.persistence?.kind ?? "memory",
+    sqlitePath: overrides.persistence?.sqlitePath,
   },
 });
