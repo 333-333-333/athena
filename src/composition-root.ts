@@ -10,7 +10,19 @@ import {
   RegisterApprovalService,
   ScanRepositoryService,
 } from "./application";
+import {
+  type AthenaConfig,
+  loadAthenaConfig,
+  validateAthenaConfig,
+} from "./infrastructure/config/athena-config";
+import {
+  type PersistenceContext,
+  selectPersistenceProvider,
+} from "./infrastructure/persistence-provider";
+
 export interface AppComposition {
+  readonly config: AthenaConfig;
+  readonly persistence: PersistenceContext;
   readonly useCases: {
     readonly initializeProject: InitializeProjectService;
     readonly manageArtifact: ManageArtifactService;
@@ -24,17 +36,28 @@ export interface AppComposition {
     readonly manageTraceability: ManageTraceabilityService;
   };
 }
-export const createAppComposition = (): AppComposition => ({
-  useCases: {
-    initializeProject: new InitializeProjectService(),
-    manageArtifact: new ManageArtifactService(),
-    manageLifecycle: new ManageLifecycleService(),
-    registerApproval: new RegisterApprovalService(),
-    checkSpecificationGaps: new CheckSpecificationGapsService(),
-    checkReadiness: new CheckReadinessService(),
-    generateProductionBrief: new GenerateProductionBriefService(),
-    generateDocs: new GenerateDocsService(),
-    scanRepository: new ScanRepositoryService(),
-    manageTraceability: new ManageTraceabilityService(),
-  },
-});
+
+export const createAppComposition = async (
+  inputConfig: AthenaConfig = loadAthenaConfig(),
+): Promise<AppComposition> => {
+  const config = validateAthenaConfig(inputConfig);
+  const provider = selectPersistenceProvider(config.persistence.kind);
+  const persistence = await provider.createPersistence(config);
+
+  return {
+    config,
+    persistence,
+    useCases: {
+      initializeProject: new InitializeProjectService(),
+      manageArtifact: new ManageArtifactService(),
+      manageLifecycle: new ManageLifecycleService(),
+      registerApproval: new RegisterApprovalService(),
+      checkSpecificationGaps: new CheckSpecificationGapsService(),
+      checkReadiness: new CheckReadinessService(),
+      generateProductionBrief: new GenerateProductionBriefService(),
+      generateDocs: new GenerateDocsService(),
+      scanRepository: new ScanRepositoryService(),
+      manageTraceability: new ManageTraceabilityService(),
+    },
+  };
+};
