@@ -15,6 +15,7 @@ describe("composition-root sqlite", () => {
     expect(composition.persistence.approvalRepository).toBeDefined();
     expect(composition.persistence.readinessReportRepository).toBeDefined();
     expect(composition.persistence.productionBriefRepository).toBeDefined();
+    expect(composition.persistence.traceLinkRepository).toBeDefined();
   });
 
   it("rejects memory persistence in production", async () => {

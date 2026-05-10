@@ -34,5 +34,6 @@ describe("persistence-provider", () => {
     expect(persistence.approvalRepository).toBeDefined();
     expect(persistence.readinessReportRepository).toBeDefined();
     expect(persistence.productionBriefRepository).toBeDefined();
+    expect(persistence.traceLinkRepository).toBeDefined();
   });
 });

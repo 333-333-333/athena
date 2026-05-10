@@ -7,6 +7,7 @@ import type {
   ProductionBriefRepository,
   ProjectRepository,
   ReadinessReportRepository,
+  TraceLinkRepository,
 } from "../application";
 import type {
   Approval,
@@ -25,6 +26,8 @@ import { InMemoryArtifactRepository } from "./repositories/in-memory-artifact-re
 import { InMemoryProductionBriefRepository } from "./repositories/in-memory-production-brief-repository";
 import { InMemoryProjectRepository } from "./repositories/in-memory-project-repository";
 import { InMemoryReadinessReportRepository } from "./repositories/in-memory-readiness-report-repository";
+import { InMemoryTraceLinkRepository } from "./repositories/in-memory-trace-link-repository";
+import { SQLiteTraceLinkRepository } from "./repositories/sqlite-trace-link-repository";
 
 export interface PersistenceContext {
   readonly projectRepository: ProjectRepository;
@@ -32,6 +35,7 @@ export interface PersistenceContext {
   readonly approvalRepository: ApprovalRepository;
   readonly readinessReportRepository: ReadinessReportRepository;
   readonly productionBriefRepository: ProductionBriefRepository;
+  readonly traceLinkRepository: TraceLinkRepository;
   readonly dispose?: () => Promise<void>;
 }
 
@@ -50,6 +54,7 @@ export class InMemoryPersistenceProvider implements PersistenceProvider {
       approvalRepository: new InMemoryApprovalRepository(),
       readinessReportRepository: new InMemoryReadinessReportRepository(),
       productionBriefRepository: new InMemoryProductionBriefRepository(),
+      traceLinkRepository: new InMemoryTraceLinkRepository(),
     };
   }
 }
@@ -73,6 +78,7 @@ export class SqlitePersistenceProvider implements PersistenceProvider {
       approvalRepository: new SQLiteApprovalRepository(db),
       readinessReportRepository: new SQLiteReadinessReportRepository(db),
       productionBriefRepository: new SQLiteProductionBriefRepository(db),
+      traceLinkRepository: new SQLiteTraceLinkRepository(db),
       dispose: async () => {
         db.close();
       },
@@ -117,9 +123,20 @@ const migrations = [
       );
     `,
   },
+  {
+    id: "002_trace_links",
+    sql: `
+      CREATE TABLE IF NOT EXISTS trace_links (
+        from_id TEXT NOT NULL,
+        to_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        PRIMARY KEY (from_id, to_id, type)
+      );
+    `,
+  },
 ] as const;
 
-const runSqliteMigrations = (db: Database): void => {
+export const runSqliteMigrations = (db: Database): void => {
   db.run(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
       id TEXT PRIMARY KEY,

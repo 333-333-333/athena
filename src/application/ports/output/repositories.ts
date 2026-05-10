@@ -4,6 +4,7 @@ import type {
   ProductionBrief,
   Project,
   ReadinessReport,
+  TraceLink,
 } from "../../../domain";
 
 export interface ProjectRepository {
@@ -29,4 +30,10 @@ export interface ReadinessReportRepository {
 export interface ProductionBriefRepository {
   save(brief: ProductionBrief): Promise<void>;
   getByProjectId(projectId: string): Promise<ProductionBrief | null>;
+}
+
+export interface TraceLinkRepository {
+  save(link: TraceLink): Promise<void>;
+  listByArtifactId(artifactId: string): Promise<TraceLink[]>;
+  delete(link: TraceLink): Promise<void>;
 }

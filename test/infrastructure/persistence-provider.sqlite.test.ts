@@ -57,6 +57,9 @@ describe("persistence-provider sqlite", () => {
     expect(first.productionBriefRepository.constructor.name).toBe(
       "SQLiteProductionBriefRepository",
     );
+    expect(first.traceLinkRepository.constructor.name).toBe(
+      "SQLiteTraceLinkRepository",
+    );
 
     await first.projectRepository.save({
       id: "p1",
@@ -205,6 +208,11 @@ describe("persistence-provider sqlite", () => {
       status: "draft",
       version: { major: 1, minor: 0, patch: 0 },
     });
+    await writer.traceLinkRepository.save({
+      fromId: "persist-a",
+      toId: "persist-p",
+      type: "depends_on",
+    });
     await writer.dispose?.();
 
     const reader = await provider.createPersistence(config);
@@ -219,6 +227,9 @@ describe("persistence-provider sqlite", () => {
       status: "draft",
       version: { major: 1, minor: 0, patch: 0 },
     });
+    expect(
+      await reader.traceLinkRepository.listByArtifactId("persist-a"),
+    ).toEqual([{ fromId: "persist-a", toId: "persist-p", type: "depends_on" }]);
     await reader.dispose?.();
   });
 });
