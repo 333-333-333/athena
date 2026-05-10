@@ -1,6 +1,6 @@
 import type {
-  CheckReadinessUseCase,
   CheckReadinessQuery,
+  CheckReadinessUseCase,
 } from "../ports/input";
 export class CheckReadinessService implements CheckReadinessUseCase {
   async execute(_query: CheckReadinessQuery): Promise<void> {

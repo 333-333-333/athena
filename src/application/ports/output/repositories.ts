@@ -1,9 +1,9 @@
 import type {
-  KnowledgeArtifact,
-  Project,
   Approval,
-  ReadinessReport,
+  KnowledgeArtifact,
   ProductionBrief,
+  Project,
+  ReadinessReport,
 } from "../../../domain";
 export interface ProjectRepository {
   save(project: Project): Promise<void>;

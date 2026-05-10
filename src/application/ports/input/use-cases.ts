@@ -1,4 +1,10 @@
 import type {
+  InitializeProjectCommand,
+  ManageArtifactCommand,
+  ManageLifecycleCommand,
+  RegisterApprovalCommand,
+} from "./commands";
+import type {
   CheckReadinessQuery,
   CheckSpecificationGapsQuery,
   GenerateDocsQuery,
@@ -6,12 +12,6 @@ import type {
   ManageTraceabilityQuery,
   ScanRepositoryQuery,
 } from "./queries";
-import type {
-  InitializeProjectCommand,
-  ManageArtifactCommand,
-  ManageLifecycleCommand,
-  RegisterApprovalCommand,
-} from "./commands";
 export interface InitializeProjectUseCase {
   execute(command: InitializeProjectCommand): Promise<void>;
 }

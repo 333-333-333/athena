@@ -1,6 +1,6 @@
 import type {
-  CheckSpecificationGapsUseCase,
   CheckSpecificationGapsQuery,
+  CheckSpecificationGapsUseCase,
 } from "../ports/input";
 export class CheckSpecificationGapsService
   implements CheckSpecificationGapsUseCase

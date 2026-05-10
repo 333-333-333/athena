@@ -1,6 +1,6 @@
 import type {
-  GenerateProductionBriefUseCase,
   GenerateProductionBriefQuery,
+  GenerateProductionBriefUseCase,
 } from "../ports/input";
 export class GenerateProductionBriefService
   implements GenerateProductionBriefUseCase
