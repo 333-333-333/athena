@@ -5,6 +5,7 @@ import {
   GenerateProductionBriefService,
   InitializeProjectService,
   ManageArtifactService,
+  ManageFeatureService,
   ManageLifecycleService,
   ManageTraceabilityService,
   RegisterApprovalService,
@@ -26,6 +27,7 @@ export interface AppComposition {
   readonly useCases: {
     readonly initializeProject: InitializeProjectService;
     readonly manageArtifact: ManageArtifactService;
+    readonly manageFeature: ManageFeatureService;
     readonly manageLifecycle: ManageLifecycleService;
     readonly registerApproval: RegisterApprovalService;
     readonly checkSpecificationGaps: CheckSpecificationGapsService;
@@ -51,7 +53,11 @@ export const createAppComposition = async (
       initializeProject: new InitializeProjectService(
         persistence.projectRepository,
       ),
-      manageArtifact: new ManageArtifactService(),
+      manageArtifact: new ManageArtifactService(
+        persistence.artifactRepository,
+        persistence.featureRepository,
+      ),
+      manageFeature: new ManageFeatureService(persistence.featureRepository),
       manageLifecycle: new ManageLifecycleService(),
       registerApproval: new RegisterApprovalService(),
       checkSpecificationGaps: new CheckSpecificationGapsService(),

@@ -1,6 +1,7 @@
 export * from "./approval";
 export * from "./business-rule";
 export * from "./decision";
+export * from "./feature";
 export * from "./knowledge-artifact";
 export * from "./open-question";
 export * from "./production-brief";

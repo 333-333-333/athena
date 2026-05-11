@@ -4,6 +4,7 @@ import { dirname } from "node:path";
 import type {
   ApprovalRepository,
   ArtifactRepository,
+  FeatureRepository,
   ProductionBriefRepository,
   ProjectRepository,
   ReadinessReportRepository,
@@ -23,10 +24,12 @@ import type {
 import { DEFAULT_SQLITE_PATH } from "./config/athena-config";
 import { InMemoryApprovalRepository } from "./repositories/in-memory-approval-repository";
 import { InMemoryArtifactRepository } from "./repositories/in-memory-artifact-repository";
+import { InMemoryFeatureRepository } from "./repositories/in-memory-feature-repository";
 import { InMemoryProductionBriefRepository } from "./repositories/in-memory-production-brief-repository";
 import { InMemoryProjectRepository } from "./repositories/in-memory-project-repository";
 import { InMemoryReadinessReportRepository } from "./repositories/in-memory-readiness-report-repository";
 import { InMemoryTraceLinkRepository } from "./repositories/in-memory-trace-link-repository";
+import { SQLiteFeatureRepository } from "./repositories/sqlite-feature-repository";
 import { SQLiteTraceLinkRepository } from "./repositories/sqlite-trace-link-repository";
 
 export interface PersistenceContext {
@@ -36,6 +39,7 @@ export interface PersistenceContext {
   readonly readinessReportRepository: ReadinessReportRepository;
   readonly productionBriefRepository: ProductionBriefRepository;
   readonly traceLinkRepository: TraceLinkRepository;
+  readonly featureRepository: FeatureRepository;
   readonly dispose?: () => Promise<void>;
 }
 
@@ -55,6 +59,7 @@ export class InMemoryPersistenceProvider implements PersistenceProvider {
       readinessReportRepository: new InMemoryReadinessReportRepository(),
       productionBriefRepository: new InMemoryProductionBriefRepository(),
       traceLinkRepository: new InMemoryTraceLinkRepository(),
+      featureRepository: new InMemoryFeatureRepository(),
     };
   }
 }
@@ -79,6 +84,7 @@ export class SqlitePersistenceProvider implements PersistenceProvider {
       readinessReportRepository: new SQLiteReadinessReportRepository(db),
       productionBriefRepository: new SQLiteProductionBriefRepository(db),
       traceLinkRepository: new SQLiteTraceLinkRepository(db),
+      featureRepository: new SQLiteFeatureRepository(db),
       dispose: async () => {
         db.close();
       },
@@ -131,6 +137,15 @@ const migrations = [
         to_id TEXT NOT NULL,
         type TEXT NOT NULL,
         PRIMARY KEY (from_id, to_id, type)
+      );
+    `,
+  },
+  {
+    id: "003_features",
+    sql: `
+      CREATE TABLE IF NOT EXISTS features (
+        id TEXT PRIMARY KEY,
+        payload TEXT NOT NULL
       );
     `,
   },
@@ -193,16 +208,28 @@ class SQLiteProjectRepository implements ProjectRepository {
 }
 
 class SQLiteArtifactRepository implements ArtifactRepository {
+  private readonly createQuery;
   private readonly saveQuery;
   private readonly getQuery;
+  private readonly listQuery;
+  private readonly deleteQuery;
 
   constructor(db: Database) {
+    this.createQuery = db.query(
+      "INSERT INTO artifacts (id, payload) VALUES (?1, ?2)",
+    );
     this.saveQuery = db.query(
       "INSERT INTO artifacts (id, payload) VALUES (?1, ?2) ON CONFLICT(id) DO UPDATE SET payload = excluded.payload",
     );
     this.getQuery = db.query(
       "SELECT payload FROM artifacts WHERE id = ?1 LIMIT 1",
     );
+    this.listQuery = db.query("SELECT payload FROM artifacts ORDER BY id");
+    this.deleteQuery = db.query("DELETE FROM artifacts WHERE id = ?1");
+  }
+
+  async create(artifact: KnowledgeArtifact): Promise<void> {
+    this.createQuery.run(artifact.id, JSON.stringify(artifact));
   }
 
   async save(artifact: KnowledgeArtifact): Promise<void> {
@@ -212,6 +239,19 @@ class SQLiteArtifactRepository implements ArtifactRepository {
   async getById(artifactId: string): Promise<KnowledgeArtifact | null> {
     const row = this.getQuery.get(artifactId) as { payload: string } | null;
     return row === null ? null : (JSON.parse(row.payload) as KnowledgeArtifact);
+  }
+
+  async list(): Promise<KnowledgeArtifact[]> {
+    const rows = this.listQuery.all() as Array<{ payload: string }>;
+    return rows.map((row) => JSON.parse(row.payload) as KnowledgeArtifact);
+  }
+
+  async update(artifactId: string, artifact: KnowledgeArtifact): Promise<void> {
+    this.saveQuery.run(artifactId, JSON.stringify(artifact));
+  }
+
+  async delete(artifactId: string): Promise<void> {
+    this.deleteQuery.run(artifactId);
   }
 }
 

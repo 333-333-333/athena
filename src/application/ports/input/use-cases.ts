@@ -4,6 +4,7 @@ import type {
   ManageArtifactCommand,
   ManageLifecycleCommand,
   RegisterApprovalCommand,
+  UpdateArtifactCommand,
 } from "./commands";
 import type {
   CheckReadinessQuery,
@@ -18,6 +19,12 @@ export interface InitializeProjectUseCase {
 }
 export interface ManageArtifactUseCase {
   execute(command: ManageArtifactCommand): Promise<void>;
+  get(
+    artifactId: string,
+  ): Promise<import("../../../domain").Requirement | null>;
+  list(): Promise<import("../../../domain").Requirement[]>;
+  update(artifactId: string, command: UpdateArtifactCommand): Promise<void>;
+  delete(artifactId: string): Promise<void>;
 }
 export interface ManageLifecycleUseCase {
   execute(command: ManageLifecycleCommand): Promise<void>;

@@ -1,5 +1,6 @@
 import type {
   Approval,
+  Feature,
   KnowledgeArtifact,
   ProductionBrief,
   Project,
@@ -13,8 +14,12 @@ export interface ProjectRepository {
 }
 
 export interface ArtifactRepository {
-  save(artifact: KnowledgeArtifact): Promise<void>;
+  create(artifact: KnowledgeArtifact): Promise<void>;
   getById(artifactId: string): Promise<KnowledgeArtifact | null>;
+  list(): Promise<KnowledgeArtifact[]>;
+  update(artifactId: string, artifact: KnowledgeArtifact): Promise<void>;
+  delete(artifactId: string): Promise<void>;
+  save(artifact: KnowledgeArtifact): Promise<void>;
 }
 
 export interface ApprovalRepository {
@@ -36,4 +41,15 @@ export interface TraceLinkRepository {
   save(link: TraceLink): Promise<void>;
   listByArtifactId(artifactId: string): Promise<TraceLink[]>;
   delete(link: TraceLink): Promise<void>;
+}
+
+export interface FeatureRepository {
+  create(feature: Feature): Promise<void>;
+  getById(id: string): Promise<Feature | null>;
+  list(): Promise<Feature[]>;
+  update(
+    id: string,
+    changes: Partial<Omit<Feature, "id" | "createdAt">>,
+  ): Promise<void>;
+  delete(id: string): Promise<void>;
 }

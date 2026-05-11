@@ -233,3 +233,57 @@ describe("persistence-provider sqlite", () => {
     await reader.dispose?.();
   });
 });
+
+it("supports artifact create/list/update/delete persistence", async () => {
+  const dbPath = await createTempDbPath();
+  const provider = new SqlitePersistenceProvider();
+  const context = await provider.createPersistence(
+    buildSqlitePersistenceConfig({
+      persistence: { kind: "sqlite", sqlitePath: dbPath },
+    }),
+  );
+
+  await context.artifactRepository.create({
+    id: "FUN-999" as never,
+    title: "t",
+    status: "draft",
+    version: { major: 1, minor: 0, patch: 0 },
+    kind: "functional",
+    priority: "high",
+    details: {
+      subject: "Athena",
+      normativeLevel: "must",
+      requirement: "x",
+      statement: "Athena MUST x.",
+      featureId: "PERSISTENCE",
+    },
+  } as never);
+
+  expect((await context.artifactRepository.list()).length).toBe(1);
+
+  await context.artifactRepository.update("FUN-999", {
+    id: "FUN-999" as never,
+    title: "t2",
+    status: "draft",
+    version: { major: 1, minor: 0, patch: 0 },
+    kind: "functional",
+    priority: "high",
+    details: {
+      subject: "Athena",
+      normativeLevel: "must",
+      requirement: "y",
+      statement: "Athena MUST y.",
+      featureId: "PERSISTENCE",
+    },
+  } as never);
+
+  const updatedArtifact = (await context.artifactRepository.getById(
+    "FUN-999",
+  )) as {
+    details?: { requirement?: string };
+  } | null;
+  expect(updatedArtifact?.details?.requirement).toBe("y");
+  await context.artifactRepository.delete("FUN-999");
+  expect(await context.artifactRepository.getById("FUN-999")).toBeNull();
+  await context.dispose?.();
+});

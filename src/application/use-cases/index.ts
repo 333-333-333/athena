@@ -4,6 +4,7 @@ export * from "./generate-docs";
 export * from "./generate-production-brief";
 export * from "./initialize-project";
 export * from "./manage-artifact";
+export * from "./manage-feature";
 export * from "./manage-lifecycle";
 export * from "./manage-traceability";
 export * from "./register-approval";
