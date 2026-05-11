@@ -27,14 +27,19 @@ describe("sqlite-trace-link-repository", () => {
     const db = new Database(dbPath, { create: true, strict: true });
     runSqliteMigrations(db);
     const repository = new SQLiteTraceLinkRepository(db);
-    const { first, second, third } = sqliteTraceLinkRepositoryFixtures;
+    const { featureLink, first, second, third } =
+      sqliteTraceLinkRepositoryFixtures;
 
     await repository.save(first);
     await repository.save(second);
     await repository.save(third);
+    await repository.save(featureLink);
 
     expect(await repository.listByArtifactId("REQ-2")).toEqual([first, second]);
     expect(await repository.listByArtifactId("UC-2")).toEqual([first, third]);
+    expect(await repository.listByArtifactId("FEATURE-2")).toEqual([
+      featureLink,
+    ]);
 
     await repository.delete(first);
 

@@ -16,4 +16,9 @@ export const sqliteTraceLinkRepositoryFixtures = {
     toId: "TEST-2",
     type: "verifies",
   }),
+  featureLink: buildSqliteTraceLink({
+    fromId: "FUN-2",
+    toId: "FEATURE-2",
+    type: "belongs_to_feature",
+  }),
 };
