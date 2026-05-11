@@ -1,6 +1,7 @@
 import {
   CheckReadinessService,
   CheckSpecificationGapsService,
+  FeatureStatusService,
   GenerateDocsService,
   GenerateProductionBriefService,
   InitializeProjectService,
@@ -38,6 +39,7 @@ export interface AppComposition {
     readonly scanRepository: ScanRepositoryService;
     readonly manageTraceability: ManageTraceabilityService;
     readonly projectStatus: ProjectStatusService;
+    readonly featureStatus: FeatureStatusService;
   };
 }
 
@@ -67,9 +69,16 @@ export const createAppComposition = async (
       generateProductionBrief: new GenerateProductionBriefService(),
       generateDocs: new GenerateDocsService(),
       scanRepository: new ScanRepositoryService(),
-      manageTraceability: new ManageTraceabilityService(),
+      manageTraceability: new ManageTraceabilityService(
+        persistence.traceLinkRepository,
+      ),
       projectStatus: new ProjectStatusService(
         persistence.projectRepository,
+        persistence.featureRepository,
+        persistence.artifactRepository,
+        persistence.traceLinkRepository,
+      ),
+      featureStatus: new FeatureStatusService(
         persistence.featureRepository,
         persistence.artifactRepository,
         persistence.traceLinkRepository,

@@ -1,7 +1,9 @@
 import {
+  FeatureStatusService,
   InitializeProjectService,
   ManageArtifactService,
   ManageFeatureService,
+  ManageTraceabilityService,
   ProjectStatusService,
 } from "../../../src/application";
 import type { AppComposition } from "../../../src/composition-root";
@@ -16,6 +18,12 @@ export const buildCliComposition = (): AppComposition => {
   const projectRepository = new InMemoryProjectRepository();
   const artifactRepository = new InMemoryArtifactRepository();
   const featureRepository = new InMemoryFeatureRepository();
+  const traceLinkRepository = {
+    list: async () => [],
+    listByArtifactId: async () => [],
+    save: async () => {},
+    delete: async () => {},
+  };
 
   return {
     config: {
@@ -32,7 +40,7 @@ export const buildCliComposition = (): AppComposition => {
       productionBriefRepository:
         {} as AppComposition["persistence"]["productionBriefRepository"],
       traceLinkRepository:
-        {} as AppComposition["persistence"]["traceLinkRepository"],
+        traceLinkRepository as AppComposition["persistence"]["traceLinkRepository"],
       featureRepository,
     },
     useCases: {
@@ -51,18 +59,19 @@ export const buildCliComposition = (): AppComposition => {
         {} as AppComposition["useCases"]["generateProductionBrief"],
       generateDocs: {} as AppComposition["useCases"]["generateDocs"],
       scanRepository: {} as AppComposition["useCases"]["scanRepository"],
-      manageTraceability:
-        {} as AppComposition["useCases"]["manageTraceability"],
+      manageTraceability: new ManageTraceabilityService(
+        traceLinkRepository as AppComposition["persistence"]["traceLinkRepository"],
+      ),
       projectStatus: new ProjectStatusService(
         projectRepository,
         featureRepository,
         artifactRepository,
-        {
-          list: async () => [],
-          listByArtifactId: async () => [],
-          save: async () => {},
-          delete: async () => {},
-        },
+        traceLinkRepository,
+      ),
+      featureStatus: new FeatureStatusService(
+        featureRepository,
+        artifactRepository,
+        traceLinkRepository,
       ),
     },
   };
@@ -101,10 +110,16 @@ export const buildSqliteCliComposition = async (
         {} as AppComposition["useCases"]["generateProductionBrief"],
       generateDocs: {} as AppComposition["useCases"]["generateDocs"],
       scanRepository: {} as AppComposition["useCases"]["scanRepository"],
-      manageTraceability:
-        {} as AppComposition["useCases"]["manageTraceability"],
+      manageTraceability: new ManageTraceabilityService(
+        persistence.traceLinkRepository,
+      ),
       projectStatus: new ProjectStatusService(
         persistence.projectRepository,
+        persistence.featureRepository,
+        persistence.artifactRepository,
+        persistence.traceLinkRepository,
+      ),
+      featureStatus: new FeatureStatusService(
         persistence.featureRepository,
         persistence.artifactRepository,
         persistence.traceLinkRepository,

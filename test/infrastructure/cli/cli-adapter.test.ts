@@ -438,4 +438,117 @@ describe("infrastructure/cli/cli-adapter.ts", () => {
     expect(last).toContain('"counts"');
     await composition.persistence.dispose?.();
   });
+
+  it("supports trace create/list/delete with friendly and json output", async () => {
+    const sqlitePath = await createTempDbPath();
+    const composition = await buildSqliteCliComposition(sqlitePath);
+    const output: string[] = [];
+    const adapter = new CliInterfaceAdapter({
+      createComposition: async () => composition,
+      now: () => "2026-05-11T00:00:00.000Z",
+      writeLine: (line) => output.push(line),
+    });
+
+    await adapter.run([
+      "trace",
+      "create",
+      "--from",
+      "FUN-001",
+      "--to",
+      "FEATURE_MANAGEMENT",
+      "--type",
+      "belongs_to_feature",
+    ]);
+    await adapter.run(["trace", "list"]);
+    await adapter.run(["trace", "list", "--artifact", "FUN-001", "--json"]);
+    await adapter.run([
+      "trace",
+      "delete",
+      "--from",
+      "FUN-001",
+      "--to",
+      "FEATURE_MANAGEMENT",
+      "--type",
+      "belongs_to_feature",
+    ]);
+
+    expect(
+      output.some((line) =>
+        line.includes(
+          "Created trace link FUN-001 -> FEATURE_MANAGEMENT [belongs_to_feature]",
+        ),
+      ),
+    ).toBeTrue();
+    expect(output.some((line) => line.includes("Trace links: 1"))).toBeTrue();
+    expect(
+      output.some((line) => line.includes('"fromId":"FUN-001"')),
+    ).toBeTrue();
+    expect(
+      output.some((line) =>
+        line.includes(
+          "Deleted trace link FUN-001 -> FEATURE_MANAGEMENT [belongs_to_feature]",
+        ),
+      ),
+    ).toBeTrue();
+    await composition.persistence.dispose?.();
+  });
+
+  it("prints feature status friendly and json", async () => {
+    const sqlitePath = await createTempDbPath();
+    const composition = await buildSqliteCliComposition(sqlitePath);
+    const output: string[] = [];
+    const adapter = new CliInterfaceAdapter({
+      createComposition: async () => composition,
+      now: () => "2026-05-11T00:00:00.000Z",
+      writeLine: (line) => output.push(line),
+    });
+
+    await adapter.run([
+      "feature",
+      "create",
+      "FEATURE_MANAGEMENT",
+      "--name",
+      "Feature Management",
+    ]);
+    await adapter.run([
+      "requirement",
+      "create",
+      "FUN-001",
+      "--title",
+      "req",
+      "--subject",
+      "Athena",
+      "--level",
+      "must",
+      "--requirement",
+      "manage feature state",
+      "--priority",
+      "high",
+      "--feature",
+      "FEATURE_MANAGEMENT",
+    ]);
+    await adapter.run([
+      "trace",
+      "create",
+      "--from",
+      "FUN-001",
+      "--to",
+      "FEATURE_MANAGEMENT",
+      "--type",
+      "belongs_to_feature",
+    ]);
+
+    await adapter.run(["feature", "status", "FEATURE_MANAGEMENT"]);
+    await adapter.run(["feature", "status", "FEATURE_MANAGEMENT", "--json"]);
+
+    const friendly =
+      output.find((line) => line.includes("Feature: FEATURE_MANAGEMENT")) ?? "";
+    const json = output[output.length - 1] ?? "";
+    expect(friendly).toContain("Feature: FEATURE_MANAGEMENT");
+    expect(friendly).toContain("Requirements: 1 [FUN-001]");
+    expect(friendly).toContain("Trace links: 1");
+    expect(json).toContain('"feature":{"id":"FEATURE_MANAGEMENT"');
+    expect(json).toContain('"gaps"');
+    await composition.persistence.dispose?.();
+  });
 });

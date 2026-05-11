@@ -66,6 +66,70 @@ export class CliInterfaceAdapter {
       );
       return;
     }
+    if (command === "feature" && args[0] === "status") {
+      const composition = await this.createComposition({ sqlitePath });
+      const status = await composition.useCases.featureStatus.execute(
+        args[1] ?? "",
+      );
+      this.writeLine(
+        jsonOutput ? JSON.stringify(status) : formatFeatureStatusOutput(status),
+      );
+      return;
+    }
+    if (command === "trace" && args[0] === "create") {
+      const composition = await this.createComposition({ sqlitePath });
+      const fromId = readOption(args, "--from") ?? "";
+      const toId = readOption(args, "--to") ?? "";
+      const type = (readOption(args, "--type") ?? "depends_on") as
+        | "depends_on"
+        | "satisfies"
+        | "implements"
+        | "verifies"
+        | "belongs_to_feature";
+      await composition.useCases.manageTraceability.create({
+        fromId,
+        toId,
+        type,
+      });
+      if (jsonOutput) {
+        this.writeLine(JSON.stringify({ fromId, toId, type }));
+      } else {
+        this.writeLine(`Created trace link ${fromId} -> ${toId} [${type}]`);
+      }
+      return;
+    }
+    if (command === "trace" && args[0] === "list") {
+      const composition = await this.createComposition({ sqlitePath });
+      const artifactId = readOption(args, "--artifact");
+      const links =
+        await composition.useCases.manageTraceability.list(artifactId);
+      this.writeLine(
+        jsonOutput ? JSON.stringify(links) : formatTraceLinksOutput(links),
+      );
+      return;
+    }
+    if (command === "trace" && args[0] === "delete") {
+      const composition = await this.createComposition({ sqlitePath });
+      const fromId = readOption(args, "--from") ?? "";
+      const toId = readOption(args, "--to") ?? "";
+      const type = (readOption(args, "--type") ?? "depends_on") as
+        | "depends_on"
+        | "satisfies"
+        | "implements"
+        | "verifies"
+        | "belongs_to_feature";
+      await composition.useCases.manageTraceability.remove({
+        fromId,
+        toId,
+        type,
+      });
+      if (jsonOutput) {
+        this.writeLine(JSON.stringify({ deleted: { fromId, toId, type } }));
+      } else {
+        this.writeLine(`Deleted trace link ${fromId} -> ${toId} [${type}]`);
+      }
+      return;
+    }
     if (command === "feature" && args[0] === "create") {
       const featureId = args[1] ?? "";
       const composition = await this.createComposition({ sqlitePath });
@@ -358,6 +422,53 @@ const stripFlag = (args: readonly string[], flagName: string): string[] =>
 
 const hasFlag = (args: readonly string[], flagName: string): boolean =>
   args.includes(flagName);
+
+const formatTraceLinksOutput = (
+  links: ReadonlyArray<{ fromId: string; toId: string; type: string }>,
+): string => {
+  if (links.length === 0) {
+    return "Trace links: 0";
+  }
+
+  return [
+    `Trace links: ${links.length}`,
+    ...links.map((link) => `${link.fromId} -> ${link.toId} [${link.type}]`),
+  ].join("\n");
+};
+
+const formatFeatureStatusOutput = (status: {
+  feature: { id: string; name: string; status: string } | null;
+  requirements: { count: number; ids: string[] };
+  traceLinks: {
+    count: number;
+    items: Array<{ fromId: string; toId: string; type: string }>;
+  };
+  gaps: {
+    missingRequirements: boolean;
+    requirementsWithoutTraceLink: string[];
+  };
+}): string => {
+  const featureLine =
+    status.feature === null
+      ? "Feature: not found"
+      : `Feature: ${status.feature.id} (${status.feature.name}) [${status.feature.status}]`;
+  const reqLine =
+    status.requirements.count === 0
+      ? "Requirements: 0"
+      : `Requirements: ${status.requirements.count} [${status.requirements.ids.join(", ")}]`;
+  const traceGapLine =
+    status.gaps.requirementsWithoutTraceLink.length === 0
+      ? "Requirements without trace link: 0"
+      : `Requirements without trace link: ${status.gaps.requirementsWithoutTraceLink.length} [${status.gaps.requirementsWithoutTraceLink.join(", ")}]`;
+
+  return [
+    featureLine,
+    reqLine,
+    `Trace links: ${status.traceLinks.count}`,
+    `Missing requirements: ${status.gaps.missingRequirements ? "yes" : "no"}`,
+    traceGapLine,
+  ].join("\n");
+};
 
 const formatProjectStatusOutput = (status: {
   project: { id: string; name: string } | null;

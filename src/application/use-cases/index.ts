@@ -1,5 +1,6 @@
 export * from "./check-readiness";
 export * from "./check-specification-gaps";
+export * from "./feature-status";
 export * from "./generate-docs";
 export * from "./generate-production-brief";
 export * from "./initialize-project";
