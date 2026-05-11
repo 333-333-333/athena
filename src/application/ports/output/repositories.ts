@@ -11,6 +11,7 @@ import type {
 export interface ProjectRepository {
   save(project: Project): Promise<void>;
   getById(projectId: string): Promise<Project | null>;
+  list(): Promise<Project[]>;
 }
 
 export interface ArtifactRepository {
@@ -40,6 +41,7 @@ export interface ProductionBriefRepository {
 export interface TraceLinkRepository {
   save(link: TraceLink): Promise<void>;
   listByArtifactId(artifactId: string): Promise<TraceLink[]>;
+  list(): Promise<TraceLink[]>;
   delete(link: TraceLink): Promise<void>;
 }
 

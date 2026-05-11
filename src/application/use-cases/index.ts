@@ -7,5 +7,6 @@ export * from "./manage-artifact";
 export * from "./manage-feature";
 export * from "./manage-lifecycle";
 export * from "./manage-traceability";
+export * from "./project-status";
 export * from "./register-approval";
 export * from "./scan-repository";

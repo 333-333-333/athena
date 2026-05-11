@@ -58,6 +58,14 @@ export class CliInterfaceAdapter {
       }
       return;
     }
+    if (command === "project" && args[0] === "status") {
+      const composition = await this.createComposition({ sqlitePath });
+      const status = await composition.useCases.projectStatus.execute();
+      this.writeLine(
+        jsonOutput ? JSON.stringify(status) : formatProjectStatusOutput(status),
+      );
+      return;
+    }
     if (command === "feature" && args[0] === "create") {
       const featureId = args[1] ?? "";
       const composition = await this.createComposition({ sqlitePath });
@@ -130,7 +138,7 @@ export class CliInterfaceAdapter {
     if (command === "requirement" && args[0] === "create") {
       const createArgs = args.slice(1);
       const composition = await this.createComposition({ sqlitePath });
-      const command = buildRequirementCommand(createArgs);
+      const command = buildRequirementCommand(createArgs, createArgs[0] ?? "");
       await composition.useCases.manageArtifact.execute(command);
       const requirement = await composition.useCases.manageArtifact.get(
         command.artifactId,
@@ -350,3 +358,33 @@ const stripFlag = (args: readonly string[], flagName: string): string[] =>
 
 const hasFlag = (args: readonly string[], flagName: string): boolean =>
   args.includes(flagName);
+
+const formatProjectStatusOutput = (status: {
+  project: { id: string; name: string } | null;
+  counts: { features: number; requirements: number; traceLinks: number };
+  gaps: {
+    requirementsWithoutFeature: { count: number; ids: string[] };
+    featuresWithoutRequirements: { count: number; ids: string[] };
+  };
+}): string => {
+  const projectLine =
+    status.project === null
+      ? "Project: none"
+      : `Project: ${status.project.id} (${status.project.name})`;
+  const reqGapLine =
+    status.gaps.requirementsWithoutFeature.count === 0
+      ? "Requirements without feature: 0"
+      : `Requirements without feature: ${status.gaps.requirementsWithoutFeature.count} [${status.gaps.requirementsWithoutFeature.ids.join(", ")}]`;
+  const featureGapLine =
+    status.gaps.featuresWithoutRequirements.count === 0
+      ? "Features without requirements: 0"
+      : `Features without requirements: ${status.gaps.featuresWithoutRequirements.count} [${status.gaps.featuresWithoutRequirements.ids.join(", ")}]`;
+  return [
+    projectLine,
+    `Features: ${status.counts.features}`,
+    `Requirements: ${status.counts.requirements}`,
+    `Trace links: ${status.counts.traceLinks}`,
+    reqGapLine,
+    featureGapLine,
+  ].join("\n");
+};

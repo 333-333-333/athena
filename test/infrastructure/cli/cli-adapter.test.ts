@@ -383,4 +383,59 @@ describe("infrastructure/cli/cli-adapter.ts", () => {
 
     await composition.persistence.dispose?.();
   });
+
+  it("prints friendly project status summary", async () => {
+    const sqlitePath = await createTempDbPath();
+    const composition = await buildSqliteCliComposition(sqlitePath);
+    const output: string[] = [];
+    const adapter = new CliInterfaceAdapter({
+      createComposition: async () => composition,
+      now: () => "2026-05-11T00:00:00.000Z",
+      writeLine: (line) => output.push(line),
+    });
+    await adapter.run(["init", "--id", "athena", "--name", "Athena"]);
+    await adapter.run(["feature", "create", "F1", "--name", "Feature 1"]);
+    await adapter.run(["feature", "create", "F2", "--name", "Feature 2"]);
+    await adapter.run([
+      "requirement",
+      "create",
+      "FUN-001",
+      "--title",
+      "r1",
+      "--subject",
+      "Athena",
+      "--level",
+      "must",
+      "--requirement",
+      "x",
+      "--priority",
+      "high",
+    ]);
+    await adapter.run(["project", "status"]);
+    const last = output[output.length - 1] ?? "";
+    expect(last).toContain("Project: athena (Athena)");
+    expect(last).toContain("Features: 2");
+    expect(last).toContain("Requirements: 1");
+    expect(last).toContain("Trace links: 0");
+    expect(last).toContain("Requirements without feature: 1 [FUN-001]");
+    expect(last).toContain("Features without requirements: 2 [F1, F2]");
+    await composition.persistence.dispose?.();
+  });
+
+  it("prints project status JSON with --json", async () => {
+    const sqlitePath = await createTempDbPath();
+    const composition = await buildSqliteCliComposition(sqlitePath);
+    const output: string[] = [];
+    const adapter = new CliInterfaceAdapter({
+      createComposition: async () => composition,
+      now: () => "2026-05-11T00:00:00.000Z",
+      writeLine: (line) => output.push(line),
+    });
+    await adapter.run(["init", "--id", "athena", "--name", "Athena"]);
+    await adapter.run(["project", "status", "--json"]);
+    const last = output[output.length - 1] ?? "";
+    expect(last).toContain('"project":{"id":"athena","name":"Athena"}');
+    expect(last).toContain('"counts"');
+    await composition.persistence.dispose?.();
+  });
 });

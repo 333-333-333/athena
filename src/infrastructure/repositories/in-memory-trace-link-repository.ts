@@ -23,6 +23,10 @@ export class InMemoryTraceLinkRepository implements TraceLinkRepository {
     return matches;
   }
 
+  async list(): Promise<TraceLink[]> {
+    return Array.from(this.links.values()).map((link) => ({ ...link }));
+  }
+
   async delete(link: TraceLink): Promise<void> {
     this.links.delete(traceLinkKey(link));
   }

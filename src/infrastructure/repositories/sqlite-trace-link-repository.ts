@@ -31,6 +31,23 @@ export class SQLiteTraceLinkRepository implements TraceLinkRepository {
     }));
   }
 
+  async list(): Promise<TraceLink[]> {
+    const rows = this.db
+      .prepare(
+        "SELECT from_id, to_id, type FROM trace_links ORDER BY from_id, to_id, type",
+      )
+      .all() as Array<{
+      from_id: string;
+      to_id: string;
+      type: TraceLink["type"];
+    }>;
+    return rows.map((row) => ({
+      fromId: row.from_id,
+      toId: row.to_id,
+      type: row.type,
+    }));
+  }
+
   async delete(link: TraceLink): Promise<void> {
     this.db
       .prepare(

@@ -187,6 +187,7 @@ export const runSqliteMigrations = (db: Database): void => {
 class SQLiteProjectRepository implements ProjectRepository {
   private readonly saveQuery;
   private readonly getQuery;
+  private readonly listQuery;
 
   constructor(db: Database) {
     this.saveQuery = db.query(
@@ -195,6 +196,7 @@ class SQLiteProjectRepository implements ProjectRepository {
     this.getQuery = db.query(
       "SELECT payload FROM projects WHERE id = ?1 LIMIT 1",
     );
+    this.listQuery = db.query("SELECT payload FROM projects ORDER BY id");
   }
 
   async save(project: Project): Promise<void> {
@@ -204,6 +206,11 @@ class SQLiteProjectRepository implements ProjectRepository {
   async getById(projectId: string): Promise<Project | null> {
     const row = this.getQuery.get(projectId) as { payload: string } | null;
     return row === null ? null : (JSON.parse(row.payload) as Project);
+  }
+
+  async list(): Promise<Project[]> {
+    const rows = this.listQuery.all() as Array<{ payload: string }>;
+    return rows.map((row) => JSON.parse(row.payload) as Project);
   }
 }
 

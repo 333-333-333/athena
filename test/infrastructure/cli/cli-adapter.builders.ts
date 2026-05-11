@@ -2,6 +2,7 @@ import {
   InitializeProjectService,
   ManageArtifactService,
   ManageFeatureService,
+  ProjectStatusService,
 } from "../../../src/application";
 import type { AppComposition } from "../../../src/composition-root";
 import {
@@ -52,6 +53,17 @@ export const buildCliComposition = (): AppComposition => {
       scanRepository: {} as AppComposition["useCases"]["scanRepository"],
       manageTraceability:
         {} as AppComposition["useCases"]["manageTraceability"],
+      projectStatus: new ProjectStatusService(
+        projectRepository,
+        featureRepository,
+        artifactRepository,
+        {
+          list: async () => [],
+          listByArtifactId: async () => [],
+          save: async () => {},
+          delete: async () => {},
+        },
+      ),
     },
   };
 };
@@ -91,6 +103,12 @@ export const buildSqliteCliComposition = async (
       scanRepository: {} as AppComposition["useCases"]["scanRepository"],
       manageTraceability:
         {} as AppComposition["useCases"]["manageTraceability"],
+      projectStatus: new ProjectStatusService(
+        persistence.projectRepository,
+        persistence.featureRepository,
+        persistence.artifactRepository,
+        persistence.traceLinkRepository,
+      ),
     },
   };
 };

@@ -21,4 +21,10 @@ export class InMemoryProjectRepository implements ProjectRepository {
       ...project,
     };
   }
+
+  async list(): Promise<Project[]> {
+    return Array.from(this.projects.values()).map((project) => ({
+      ...project,
+    }));
+  }
 }
