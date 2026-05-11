@@ -1,5 +1,7 @@
 export interface InitializeProjectCommand {
+  readonly projectId: string;
   readonly projectName: string;
+  readonly createdAt?: string;
 }
 export interface ManageArtifactCommand {
   readonly artifactId: string;

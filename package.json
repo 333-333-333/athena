@@ -3,6 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
+    "athena": "bun run index.ts",
+    "start": "bun run index.ts",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check .",

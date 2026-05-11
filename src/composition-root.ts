@@ -48,7 +48,9 @@ export const createAppComposition = async (
     config,
     persistence,
     useCases: {
-      initializeProject: new InitializeProjectService(),
+      initializeProject: new InitializeProjectService(
+        persistence.projectRepository,
+      ),
       manageArtifact: new ManageArtifactService(),
       manageLifecycle: new ManageLifecycleService(),
       registerApproval: new RegisterApprovalService(),

@@ -1,3 +1,4 @@
+import type { Project } from "../../../domain";
 import type {
   InitializeProjectCommand,
   ManageArtifactCommand,
@@ -13,7 +14,7 @@ import type {
   ScanRepositoryQuery,
 } from "./queries";
 export interface InitializeProjectUseCase {
-  execute(command: InitializeProjectCommand): Promise<void>;
+  execute(command: InitializeProjectCommand): Promise<Project>;
 }
 export interface ManageArtifactUseCase {
   execute(command: ManageArtifactCommand): Promise<void>;
